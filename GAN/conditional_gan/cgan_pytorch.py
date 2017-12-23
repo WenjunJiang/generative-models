@@ -37,8 +37,8 @@ bhx = Variable(torch.zeros(X_dim), requires_grad=True)
 
 def G(z, c):
     inputs = torch.cat([z, c], 1)
-    h = nn.relu(inputs @ Wzh + bzh.repeat(inputs.size(0), 1))
-    X = nn.sigmoid(h @ Whx + bhx.repeat(h.size(0), 1))
+    h = nn.relu(torch.mm(inputs, Wzh) + bzh.repeat(inputs.size(0), 1))
+    X = nn.sigmoid(torch.mm(h,Whx) + bhx.repeat(h.size(0), 1))
     return X
 
 
@@ -53,8 +53,8 @@ bhy = Variable(torch.zeros(1), requires_grad=True)
 
 def D(X, c):
     inputs = torch.cat([X, c], 1)
-    h = nn.relu(inputs @ Wxh + bxh.repeat(inputs.size(0), 1))
-    y = nn.sigmoid(h @ Why + bhy.repeat(h.size(0), 1))
+    h = nn.relu(torch.mm(inputs,Wxh) + bxh.repeat(inputs.size(0), 1))
+    y = nn.sigmoid(torch.mm(h,Why) + bhy.repeat(h.size(0), 1))
     return y
 
 
@@ -69,8 +69,9 @@ params = G_params + D_params
 def reset_grad():
     for p in params:
         if p.grad is not None:
-            data = p.grad.data
-            p.grad = Variable(data.new().resize_as_(data).zero_())
+            p.grad.data.zero_()
+            # data = p.grad.data
+            # p.grad = Variable(data.new().resize_as_(data).zero_())
 
 
 G_solver = optim.Adam(G_params, lr=1e-3)
